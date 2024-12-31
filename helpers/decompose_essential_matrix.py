@@ -12,7 +12,6 @@ def decomposeEssentialMatrix(E):
       - R(3,3,2) : the two possible rotations
       - u3(3,1)   : a vector with the translation information
     """
-    pass
     u, _, vh = np.linalg.svd(E)
 
     # Translation

@@ -1,6 +1,6 @@
 import numpy as np
 
-from previous.arrow_3d import Arrow3D
+from helpers.arrow_3d import Arrow3D
 
 
 def drawCamera(

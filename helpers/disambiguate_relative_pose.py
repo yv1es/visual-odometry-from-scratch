@@ -1,6 +1,6 @@
 import numpy as np
 
-from previous.linear_triangulation import linearTriangulation
+from helpers.linear_triangulation import linearTriangulation
 
 
 def disambiguateRelativePose(Rots, u3, points0_h, points1_h, K1, K2):
@@ -24,9 +24,6 @@ def disambiguateRelativePose(Rots, u3, points0_h, points1_h, K1, K2):
       from the world coordinate system (identical to the coordinate system of camera 1)
       to camera 2.
     """
-    pass
-
-    # Projection matrix of camera 1
     M1 = K1 @ np.eye(3, 4)
 
     total_points_in_front_best = 0
