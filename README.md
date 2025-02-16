@@ -1,6 +1,6 @@
 # Visual Odometry Pipeline
 
-This project implements a **monocular visual odometry (VO) pipeline** from scratch using OpenCV building blocks. The pipeline estimates camera poses and reconstructs 3D landmarks from video sequences. It is designed to operate in two stages—**Bootstrapping** and **Continuous Operation**—and runs in real time on standard hardware. For a detailed discussion of the pipeline’s inner workings, please refer to the _Visual Odometry Pipeline Report_ section below.
+This project implements a **monocular visual odometry (VO) pipeline** from scratch using OpenCV. The pipeline estimates camera poses and reconstructs 3D landmarks from video sequences. It operates in two stages—**Bootstrapping** and **Continuous Operation**—and runs in real time on standard hardware. For a detailed discussion of the inner workings, please refer to the _Visual Odometry Pipeline Report_ in the project documentation.
 
 ---
 
@@ -11,7 +11,7 @@ This project implements a **monocular visual odometry (VO) pipeline** from scrat
   - [Continuous Operation](#continuous-operation)
 - [Running the Pipeline](#running-the-pipeline)
 - [Library Methods](#library-methods)
-- [Screencasts](#screencasts)
+- [Demo](#demo)
 
 ---
 
@@ -21,42 +21,56 @@ The VO pipeline operates in two main stages:
 
 ### Bootstrapping
 
-- **Purpose:** Initialize the pipeline by extracting an initial set of 3D landmarks.
-- **Method:**
-  - **Keypoint Detection:** Initially, Shi-Tomasi corner detection is used.
-  - **Feature Matching:** Shi-Tomasi corners are tracked using the Kanade-Lucas-Tomasi (KLT) method.
-  - **Robust Estimation:** The 8-point algorithm with RANSAC is used to estimate the fundamental matrix. Camera calibration then yields the essential matrix, which is decomposed into rotation and translation.
-  - **Disambiguation:** Among four possible solutions, the correct camera pose is selected by checking how many triangulated landmarks lie in front of both cameras.
-  - **Output:** An initial state consisting of keypoints, landmarks, camera pose, and empty candidate sets is created.
+- **Purpose:**  
+  Initialize the pipeline by extracting an initial set of 3D landmarks.
+  
+- **Method:**  
+  - **Keypoint Detection:**  
+    Shi-Tomasi corner detection is applied to the first frame.
+  - **Feature Matching:**  
+    Detected corners are tracked using the Kanade-Lucas-Tomasi (KLT) method.
+  - **Robust Estimation:**  
+    The 8-point algorithm with RANSAC estimates the fundamental matrix. With camera calibration, the essential matrix is computed and decomposed into rotation and translation.
+  - **Disambiguation:**  
+    Among four possible solutions, the correct camera pose is selected by verifying the number of triangulated landmarks lying in front of both cameras.
+  - **Output:**  
+    An initial state is created, including keypoints, landmarks, the initial camera pose, and empty candidate sets.
 
 ### Continuous Operation
 
-- **Purpose:** Update the pipeline frame by frame to track keypoints and triangulate new landmarks.
-- **Method:**
-  - **Localization:** 
-    - **Tracking:** Use KLT to track keypoints from the previous frame.
-    - **Pose Estimation:** Compute the camera pose using 2D–3D correspondences and P3P RANSAC.
-  - **Landmark Triangulation:**
-    - Track candidate points and triangulate new landmarks when the angle between camera rays exceeds a threshold.
-    - **Efficiency:** Grouping candidates with the same initial detection frame allows joint triangulation.
-  - **Candidate Selection:**
-    - **Detection:** New candidates are detected using Shi-Tomasi corner detection.
-    - **Filtering:** Candidates are added only if they are a minimum distance away from existing keypoints to avoid duplication.
-  - **Visualization:** For development and evaluation, a 2D projection of the landmarks is rendered to provide real-time feedback, though it can be disabled for higher processing speeds.
+- **Purpose:**  
+  Update the pipeline frame by frame to track keypoints and triangulate new landmarks.
+  
+- **Method:**  
+  - **Localization:**  
+    - **Tracking:**  
+      KLT is used to track keypoints from the previous frame.
+    - **Pose Estimation:**  
+      The camera pose is computed using 2D–3D correspondences and P3P RANSAC.
+  - **Landmark Triangulation:**  
+    Candidate points are tracked and new landmarks are triangulated when the angle between camera rays exceeds a set threshold.  
+    *Efficiency Tip:* Candidates from the same initial detection frame are grouped for joint triangulation.
+  - **Candidate Selection:**  
+    - **Detection:**  
+      New candidate points are detected using Shi-Tomasi.
+    - **Filtering:**  
+      Only candidates that are a minimum distance away from existing keypoints are added to avoid duplication.
+  - **Visualization:**  
+    A 2D projection of the landmarks and trajectory is rendered in real time (this can be disabled for faster processing during deployment).
 
 ---
 
 ## Running the Pipeline
 
 1. **Prepare the Dataset**  
-   Download the datasets and extract them into the `data` folder:
+   Download and extract the datasets into the `data` folder:
    - [PARKING](https://rpg.ifi.uzh.ch/docs/teaching/2024/parking.zip)
    - [KITTI](https://rpg.ifi.uzh.ch/docs/teaching/2024/kitti05.zip)
    - [MALAGA](https://rpg.ifi.uzh.ch/docs/teaching/2024/malaga-urban-dataset-extract-07.zip)
 
-2. **Set up the Environment:**
+2. **Set Up the Environment:**
    - Install [Anaconda](https://www.anaconda.com/products/distribution).
-   - Create the environment:
+   - Create the environment by running:
      ```bash
      conda env create -f environment.yml --prefix ./vo-env
      ```
@@ -73,31 +87,31 @@ The VO pipeline operates in two main stages:
 4. **Select the Dataset:**  
    In `main.py`, set the `DATASET` variable to choose your dataset:
    ```python
-   DATASET = Dataset.KITTI # or Dataset.PARKING or Dataset.MALAGA
+   DATASET = Dataset.KITTI  # or Dataset.PARKING or Dataset.MALAGA
    ```
 
 ---
 
 ## Library Methods
 
-The implementation leverages several key OpenCV methods:
+The implementation leverages several key OpenCV functions:
 
 - **Bootstrapping:**
-  - `cv2.goodFeaturesToTrack`: Shi-Tomasi corner detection
-  - `cv2.calcOpticalFlowPyrLK`: Kanade-Lucas-Tomasi tracking
-  - `cv2.findFundamentalMat`: 8-point (normalized) RANSAC for structure from motion (SfM)
-  - *(Alternative, no longer used):* SIFT features and descriptors for correspondences
+  - `cv2.goodFeaturesToTrack`: Shi-Tomasi corner detection.
+  - `cv2.calcOpticalFlowPyrLK`: Kanade-Lucas-Tomasi (KLT) tracking.
+  - `cv2.findFundamentalMat`: 8-point (normalized) RANSAC for structure from motion (SfM).  
+  - *(Alternative, not in use):* SIFT features and descriptors for correspondences.
 
 - **Continuous Operation:**
-  - `cv2.calcOpticalFlowPyrLK`: Keypoint and candidate tracking
-  - `cv2.solvePnPRansac`: P3P RANSAC for 2D–3D camera localization
-  - `cv2.Rodrigues`: Rotation vector to matrix conversion
-  - `cv2.triangulatePoints`: Landmark triangulation
-  - `cv2.goodFeaturesToTrack`: Shi-Tomasi for detection of new candidate points
+  - `cv2.calcOpticalFlowPyrLK`: Tracking of keypoints and candidates.
+  - `cv2.solvePnPRansac`: P3P RANSAC for 2D–3D camera localization.
+  - `cv2.Rodrigues`: Conversion of rotation vectors to rotation matrices.
+  - `cv2.triangulatePoints`: Landmark triangulation.
+  - `cv2.goodFeaturesToTrack`: Detection of new candidate points.
 
 ---
 
 ## Demo
 
-The recording was made on a Dell XPS-15 laptop with an Intel i7-12700H @ 4.7 GHz and 32GB RAM. 
-Link to youtube https://www.youtube.com/watch?v=Johjy9J9beY
+The pipeline was demonstrated on a Dell XPS-15 laptop with an Intel i7-12700H @ 4.7 GHz and 32GB RAM.  
+Watch the demo on YouTube: [Visual Odometry Pipeline Demo](https://www.youtube.com/watch?v=Johjy9J9beY)
