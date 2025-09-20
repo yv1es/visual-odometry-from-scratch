@@ -1,8 +1,16 @@
-# Visual Odometry Pipeline
 
-This project implements a **monocular visual odometry (VO) pipeline** from scratch using OpenCV. The pipeline estimates camera poses and reconstructs 3D landmarks from video sequences. It operates in two stages—**Bootstrapping** and **Continuous Operation**—and runs in real time on standard hardware. For a detailed discussion of the inner workings, please refer to the _Visual Odometry Pipeline Report_ in the project documentation.
+
+<h1 align="center">📷 Visual Odometry from Scratch</h1>
+<p align="center">
+  Real-time monocular VO pipeline in Python + OpenCV  
+</p>
+
+<p align="center">
+  <img src="https://github.com/yv1es/visual-odometry-from-scratch/raw/main/demo.gif" alt="Visual Odometry Demo" width="800"/>
+</p>
 
 ---
+This repository contains a monocular visual odometry (VO) pipeline built from scratch with OpenCV. It estimates camera poses and reconstructs 3D landmarks directly from video sequences. The system runs in real time on standard hardware and is structured into two main stages: Bootstrapping (initialization) and Continuous Operation (frame-by-frame tracking and mapping).
 
 ## Table of Contents
 
